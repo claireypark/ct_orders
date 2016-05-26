@@ -47,6 +47,8 @@ ct_orders$form_date <- as.Date(ct_orders$form_date, "%B %d, %Y")
 table(is.na(ct_orders$form_date))
 
 ct_orders$order <- gsub("^.*ORDER\\s+(\\w+).*$", "\\1", ct_orders$text)
+ct_orders$granted <- grepl("ORDER\\s+DENYING", ct_orders$text)
+ct_orders$denied <- grepl("ORDER\\s+GRANTING", ct_orders$text)
 
 # Put data into my database ----
 library(RPostgreSQL)
