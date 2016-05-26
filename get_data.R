@@ -1,16 +1,22 @@
+# dir.create("~/Dropbox/data/ct_orders")
+setwd("~/Dropbox/data/ct_orders")
+
 # Some functions to download comment letters ----
 readPDF <- function(url) {
 
     # Download PDF
     library(curl)
-    t <- tempfile()
+    t <- gsub("http://www.sec.gov/Archives/edgar/data/(.*)/filename1.pdf", "\\1.pdf", url)
+    t_dir <- gsub("^(\\d+)/\\d+\\.pdf", "\\1", t)
+    dir.create(t_dir, showWarnings = FALSE)
+
     curl::curl_download(url, t)
 
     # Create a .txt file from PDF (requires installation of a free program)
     system(paste("pdftotext", t), intern=TRUE)
 
     # Read text and remove pagebreaks from text
-    text <- paste(readLines(paste0(t, ".txt"), warn = FALSE), collapse="\n")
+    text <- paste(readLines(gsub("\\.pdf", ".txt", t), warn = FALSE), collapse="\n")
     gsub("\f", "\n", text)
 }
 
@@ -21,7 +27,7 @@ getCommentLetter <- function(file_name) {
     readPDF(url)
 }
 
-# Get a list of 100 comment letters submitted by the SEC ----
+# Get a list of court orders filed by SEC ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 ct_orders <- dbGetQuery(pg, "
@@ -39,4 +45,12 @@ ct_orders$form <- unlist(lapply(strsplit(ct_orders$details, ";"), function(x) x[
 ct_orders$form_date <- unlist(lapply(strsplit(ct_orders$details, ";"), function(x) x[2]))
 ct_orders$form_date <- as.Date(ct_orders$form_date, "%B %d, %Y")
 table(is.na(ct_orders$form_date))
-save(ct_orders, file="~/Desktop/ct_orders.Rdata")
+
+# Put data into my database ----
+library(RPostgreSQL)
+pg <- dbConnect(PostgreSQL())
+
+dbWriteTable(pg, c("filings", "ct_orders"), ct_orders,
+             overwrite=TRUE, row.names=FALSE)
+
+rs <- dbDisconnect(pg)
