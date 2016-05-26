@@ -46,6 +46,8 @@ ct_orders$form_date <- unlist(lapply(strsplit(ct_orders$details, ";"), function(
 ct_orders$form_date <- as.Date(ct_orders$form_date, "%B %d, %Y")
 table(is.na(ct_orders$form_date))
 
+ct_orders$order <- gsub("^.*ORDER\\s+(\\w+).*$", "\\1", ct_orders$text)
+
 # Put data into my database ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
