@@ -53,12 +53,19 @@ ct_orders$order_type <- gsub("^.*ORDER\\s+(\\w+).*$", "\\1", ct_orders$order_tex
 ct_orders$denied <- grepl("ORDER\\s+DENYING", ct_orders$order_text)
 ct_orders$granted <- grepl("ORDER\\s+GRANTING", ct_orders$order_text)
 
+# Get exhibits mentioned
+matches <- gregexpr("[Ee]xhibit\\s+[A-Z0-9\\.-]+", ct_orders$order_text)
+matched_text <- regmatches(ct_orders$order_text , matches)
+ct_orders$exhibits <- unlist(lapply(matched_text, function(x) paste(x, collapse=";")))
+
 # Put data into my database ----
 library(RPostgreSQL)
 pg <- dbConnect(PostgreSQL())
 
 dbWriteTable(pg, c("filings", "ct_orders"), ct_orders,
              overwrite=TRUE, row.names=FALSE)
+
+dbGetQuery(pg, "ALTER TABLE filings.ct_orders ALTER COLUMN exhibits TYPE text[] USING regexp_split_to_array(exhibits, ';')")
 
 dbGetQuery(pg, "GRANT SELECT ON filings.ct_orders TO dtayl")
 
