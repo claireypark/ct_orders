@@ -19,7 +19,7 @@ ct_orders$denied <- grepl("ORDER\\s+DENYING", ct_orders$order_text)
 ct_orders$granted <- grepl("ORDER\\s+GRANTING", ct_orders$order_text)
 
 # Get exhibits mentioned
-matches <- gregexpr("[Ee]xhibit\\s+[A-Z0-9\\.-]+", ct_orders$order_text)
+matches <- gregexpr("[Ee]xhibit\\s+[0-9][A-Z0-9a-z\\(\\)\\.-]+", ct_orders$order_text)
 matched_text <- regmatches(ct_orders$order_text , matches)
 ct_orders$exhibits <- unlist(lapply(matched_text, function(x) paste(x, collapse=";")))
 ct_orders$order_text <- NULL
