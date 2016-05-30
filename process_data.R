@@ -14,7 +14,7 @@ ct_orders$details <- NULL
 ct_orders$form_date <- as.Date(ct_orders$form_date, "%B %d, %Y")
 table(is.na(ct_orders$form_date))
 
-ct_orders$order_type <- gsub("^.*ORDER\\s+(\\w+).*$", "\\1", ct_orders$order_text)
+# ct_orders$order_type <- gsub("^.*ORDER\\s+(\\w+).*$", "\\1", ct_orders$order_text)
 ct_orders$denied <- grepl("ORDER\\s+DENYING", ct_orders$order_text)
 ct_orders$granted <- grepl("ORDER\\s+GRANTING", ct_orders$order_text)
 
